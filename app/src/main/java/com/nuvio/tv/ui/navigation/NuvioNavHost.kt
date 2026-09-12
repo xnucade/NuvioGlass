@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.nuvio.tv.core.build.AppFeaturePolicy
 import com.nuvio.tv.domain.model.ExperienceMode
+import com.nuvio.tv.ui.screens.calendar.CalendarScreen
 import com.nuvio.tv.ui.screens.CatalogSeeAllScreen
 import com.nuvio.tv.ui.screens.ExperienceModeSelectionScreen
 import com.nuvio.tv.ui.screens.LayoutSelectionScreen
@@ -1157,6 +1158,14 @@ private fun PlaybackNavHost(
                             heroBackdropUrl = heroBackdrop
                         )
                     )
+                }
+            )
+        }
+
+        composable(Screen.Calendar.route) {
+            CalendarScreen(
+                onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
+                    navController.navigate(Screen.Detail.createRoute(itemId, itemType, addonBaseUrl))
                 }
             )
         }

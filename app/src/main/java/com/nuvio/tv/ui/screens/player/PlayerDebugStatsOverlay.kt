@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.tv.material3.Text
+import com.nuvio.tv.ui.components.glass.glassSurface
+import com.nuvio.tv.ui.theme.NuvioRadii
 import com.nuvio.tv.core.network.StreamSpeedTester
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -123,9 +125,13 @@ internal fun PlayerDebugStatsOverlay(
     if (stats.isEmpty()) return
 
     Column(
+        // Glass treatment, but with live blur off: this sits over moving video, where a blur
+        // costs a render pass per frame and buys no legibility. The tint alone carries it.
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0x99000000))
+            .glassSurface(
+                shape = RoundedCornerShape(NuvioRadii.tokens.md),
+                blurEnabled = false
+            )
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {

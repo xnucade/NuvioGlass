@@ -48,6 +48,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
@@ -149,6 +150,7 @@ import com.nuvio.tv.data.local.StartupAuthNotice
 import com.nuvio.tv.data.local.ThemeDataStore
 import com.nuvio.tv.data.repository.MemberAccessRepository
 import com.nuvio.tv.data.remote.supabase.AvatarRepository
+import com.nuvio.tv.domain.model.HomeLayout
 import com.nuvio.tv.domain.model.AppFont
 import com.nuvio.tv.domain.model.AppTheme
 import com.nuvio.tv.domain.model.CustomThemeColors
@@ -245,7 +247,9 @@ private data class MainUiPrefs(
     val fastHorizontalNavigationEnabled: Boolean = false,
     val composeHighlighterEnabled: Boolean = false,
     val settingsUiStyle: SettingsUiStyle = SettingsUiStyle.CLASSIC,
-    val cardDepthStyle: CardDepthStyle = CardDepthStyle()
+    val cardDepthStyle: CardDepthStyle = CardDepthStyle(),
+    /** Glass replaces the sidebar with its own top nav pill, so chrome depends on this. */
+    val selectedLayout: HomeLayout = HomeLayout.MODERN
 )
 
 @AndroidEntryPoint
@@ -547,8 +551,9 @@ open class MainActivity : ComponentActivity() {
                     themeAndExperienceFlow,
                     layoutAndFeaturesFlow,
                     extraFeaturesFlow,
-                    layoutPreferenceDataStore.cardDepthStyle
-                ) { themePrefs, layoutPrefs, extraPrefs, cardDepthStyle ->
+                    layoutPreferenceDataStore.cardDepthStyle,
+                    layoutPreferenceDataStore.selectedLayout
+                ) { themePrefs, layoutPrefs, extraPrefs, cardDepthStyle, selectedLayout ->
                     themePrefs.copy(
                         hasChosenLayout = layoutPrefs.hasChosenLayout,
                         sidebarCollapsed = layoutPrefs.sidebarCollapsed,
@@ -560,7 +565,8 @@ open class MainActivity : ComponentActivity() {
                         fastHorizontalNavigationEnabled = extraPrefs.fastHorizontalNavigationEnabled,
                         composeHighlighterEnabled = extraPrefs.composeHighlighterEnabled,
                         settingsUiStyle = extraPrefs.settingsUiStyle,
-                        cardDepthStyle = cardDepthStyle
+                        cardDepthStyle = cardDepthStyle,
+                        selectedLayout = selectedLayout
                     )
                 }
             }
@@ -1003,6 +1009,7 @@ open class MainActivity : ComponentActivity() {
                             add(Screen.Home.route)
                             add(Screen.Search.route)
                             add(Screen.Library.route)
+                            add(Screen.Calendar.route)
                             add(Screen.Settings.route)
                             if (discoverLocation == DiscoverLocation.IN_SIDEBAR) {
                                 add(Screen.Discover.route)
@@ -1015,11 +1022,13 @@ open class MainActivity : ComponentActivity() {
                     val strNavSearch = stringResource(R.string.nav_search)
                     val strNavLibrary = stringResource(R.string.nav_library)
                     val strNavSettings = stringResource(R.string.nav_settings)
+                    val strNavCalendar = stringResource(R.string.nav_calendar)
                     val drawerItems = remember(
                         strNavHome,
                         strNavDiscover,
                         strNavSearch,
                         strNavLibrary,
+                        strNavCalendar,
                         strNavSettings,
                         discoverLocation
                     ) {
@@ -1052,6 +1061,13 @@ open class MainActivity : ComponentActivity() {
                                     route = Screen.Library.route,
                                     label = strNavLibrary,
                                     iconRes = R.raw.sidebar_library
+                                )
+                            )
+                            add(
+                                DrawerItem(
+                                    route = Screen.Calendar.route,
+                                    label = strNavCalendar,
+                                    icon = Icons.Default.DateRange
                                 )
                             )
                             add(
@@ -1116,7 +1132,20 @@ open class MainActivity : ComponentActivity() {
                             hasSelectedProfileThisSession = false
                         }
                         Box(modifier = Modifier.fillMaxSize()) {
-                            if (modernSidebarEnabled) {
+                            if (mainUiPrefs.selectedLayout == HomeLayout.GLASS) {
+                                // Glass brings its own top chrome, so no sidebar is composed at all.
+                                GlassScaffold(
+                                    longPressBackHeld = longPressBackHeld,
+                                    navController = navController,
+                                    startDestination = startDestination,
+                                    currentRoute = currentRoute,
+                                    rootRoutes = rootRoutes,
+                                    drawerItems = drawerItems,
+                                    selectedDrawerRoute = selectedDrawerRoute,
+                                    onNavigate = { optimisticRoute = it },
+                                    onExitApp = handleExitApp
+                                )
+                            } else if (modernSidebarEnabled) {
                                 ModernSidebarScaffold(
                                     longPressBackHeld = longPressBackHeld,
                                     navController = navController,
@@ -2275,7 +2304,7 @@ private fun CollapsedSidebarPill(
     }
 }
 
-private fun navigateToDrawerRoute(
+internal fun navigateToDrawerRoute(
     navController: NavHostController,
     currentRoute: String?,
     targetRoute: String

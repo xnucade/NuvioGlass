@@ -267,9 +267,20 @@ fun LayoutSettingsContent(
                             },
                             modifier = Modifier.weight(1f)
                         )
+                        LayoutCard(
+                            layout = HomeLayout.GLASS,
+                            isSelected = uiState.selectedLayout == HomeLayout.GLASS,
+                            onClick = {
+                                viewModel.onEvent(LayoutSettingsEvent.SelectLayout(HomeLayout.GLASS))
+                            },
+                            onFocused = {
+                                focusedSection = LayoutSettingsSection.HOME_LAYOUT
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
                     }
 
-                    if (uiState.selectedLayout == HomeLayout.MODERN) {
+                    if (uiState.selectedLayout.usesModernPipeline) {
                         CompactToggleRow(
                             title = stringResource(R.string.layout_landscape_posters),
                             subtitle = stringResource(R.string.layout_landscape_posters_sub),
@@ -285,7 +296,7 @@ fun LayoutSettingsContent(
                         )
                     }
 
-                    if (uiState.selectedLayout == HomeLayout.MODERN) {
+                    if (uiState.selectedLayout.usesModernPipeline) {
                         CompactToggleRow(
                             title = stringResource(R.string.layout_fullscreen_hero_backdrop),
                             subtitle = stringResource(R.string.layout_fullscreen_hero_backdrop_sub),
@@ -313,7 +324,7 @@ fun LayoutSettingsContent(
                         )
                     }
 
-                    if (uiState.heroSectionEnabled && uiState.availableCatalogs.isNotEmpty() && uiState.selectedLayout != HomeLayout.MODERN) {
+                    if (uiState.heroSectionEnabled && uiState.availableCatalogs.isNotEmpty() && !uiState.selectedLayout.usesModernPipeline) {
                         Text(
                             text = stringResource(R.string.layout_hero_catalogs),
                             style = MaterialTheme.typography.labelLarge,
@@ -421,7 +432,7 @@ fun LayoutSettingsContent(
                         },
                         onFocused = { focusedSection = LayoutSettingsSection.HOME_CONTENT }
                     )
-                    if (uiState.selectedLayout != HomeLayout.MODERN) {
+                    if (!uiState.selectedLayout.usesModernPipeline) {
                         CompactToggleRow(
                             title = stringResource(R.string.layout_show_hero),
                             subtitle = stringResource(R.string.layout_show_hero_sub),
@@ -434,7 +445,7 @@ fun LayoutSettingsContent(
                             onFocused = { focusedSection = LayoutSettingsSection.HOME_CONTENT }
                         )
                     }
-                    if (uiState.selectedLayout != HomeLayout.MODERN) {
+                    if (!uiState.selectedLayout.usesModernPipeline) {
                         CompactToggleRow(
                             title = stringResource(R.string.layout_poster_labels),
                             subtitle = stringResource(R.string.layout_poster_labels_sub),
@@ -447,7 +458,7 @@ fun LayoutSettingsContent(
                             onFocused = { focusedSection = LayoutSettingsSection.HOME_CONTENT }
                         )
                     }
-                    if (uiState.selectedLayout != HomeLayout.MODERN) {
+                    if (!uiState.selectedLayout.usesModernPipeline) {
                         CompactToggleRow(
                             title = stringResource(R.string.layout_addon_name),
                             subtitle = stringResource(R.string.layout_addon_name_sub),
@@ -816,7 +827,7 @@ fun LayoutSettingsContent(
                     focusRequester = focusedPosterHeaderFocus,
                     onFocused = { focusedSection = LayoutSettingsSection.FOCUSED_POSTER }
                 ) {
-                    val isModern = uiState.selectedLayout == HomeLayout.MODERN
+                    val isModern = uiState.selectedLayout.usesModernPipeline
                     val isModernLandscape = isModern && uiState.modernLandscapePostersEnabled
                     val showAutoplayRow = AppFeaturePolicy.inAppTrailerPlaybackEnabled &&
                         (uiState.focusedPosterBackdropExpandEnabled || isModernLandscape)
@@ -1559,7 +1570,8 @@ private fun LayoutCard(
                         modifier = Modifier.fillMaxWidth(),
                         animated = animatePreview
                     )
-                    HomeLayout.MODERN -> ModernLayoutPreview(
+                    // Glass shares Modern's structure, so it shares Modern's preview.
+                    HomeLayout.MODERN, HomeLayout.GLASS -> ModernLayoutPreview(
                         modifier = Modifier.fillMaxWidth(),
                         animated = animatePreview
                     )
@@ -1587,6 +1599,7 @@ private fun LayoutCard(
                         HomeLayout.CLASSIC -> stringResource(R.string.layout_classic)
                         HomeLayout.GRID -> stringResource(R.string.layout_grid)
                         HomeLayout.MODERN -> stringResource(R.string.layout_modern)
+                        HomeLayout.GLASS -> stringResource(R.string.layout_glass)
                     },
                     style = MaterialTheme.typography.labelLarge,
                     color = if (isSelected || isFocused) NuvioTheme.colors.TextPrimary else NuvioTheme.colors.TextSecondary

@@ -1,0 +1,49 @@
+#!/bin/zsh
+# TV remote for the emulator (or a real Onn over adb).
+#
+# Android TV AVDs are built with hw.screen=no-touch, so mouse clicks in the emulator
+# window do nothing at all — a TV is a D-pad device. This drives it over adb instead,
+# which works regardless of which window has focus.
+#
+#   ./remote up | down | left | right | ok | back | home | menu | play
+#   ./remote text "some search query"
+#   ./remote                      # interactive: press arrow keys, Enter, q to quit
+ADB="$HOME/Library/Android/sdk/platform-tools/adb"
+
+send() { "$ADB" shell input keyevent "$1" >/dev/null 2>&1; }
+
+case "$1" in
+  up)    send KEYCODE_DPAD_UP;     exit ;;
+  down)  send KEYCODE_DPAD_DOWN;   exit ;;
+  left)  send KEYCODE_DPAD_LEFT;   exit ;;
+  right) send KEYCODE_DPAD_RIGHT;  exit ;;
+  ok|enter|center) send KEYCODE_DPAD_CENTER; exit ;;
+  back)  send KEYCODE_BACK;        exit ;;
+  home)  send KEYCODE_HOME;        exit ;;
+  menu)  send KEYCODE_MENU;        exit ;;
+  play)  send KEYCODE_MEDIA_PLAY_PAUSE; exit ;;
+  text)  "$ADB" shell input text "${2// /%s}" >/dev/null 2>&1; exit ;;
+esac
+
+echo "Interactive remote. Arrow keys move, Enter selects, b = back, q = quit."
+stty -echo -icanon 2>/dev/null
+trap 'stty echo icanon 2>/dev/null; echo; exit' INT TERM
+while true; do
+  k=$(dd bs=1 count=1 2>/dev/null)
+  case "$k" in
+    q) break ;;
+    b) send KEYCODE_BACK ;;
+    "") send KEYCODE_DPAD_CENTER ;;
+    $'\x1b')
+      dd bs=1 count=1 >/dev/null 2>&1          # consume '['
+      a=$(dd bs=1 count=1 2>/dev/null)
+      case "$a" in
+        A) send KEYCODE_DPAD_UP ;;
+        B) send KEYCODE_DPAD_DOWN ;;
+        C) send KEYCODE_DPAD_RIGHT ;;
+        D) send KEYCODE_DPAD_LEFT ;;
+      esac ;;
+  esac
+done
+stty echo icanon 2>/dev/null
+echo "bye"

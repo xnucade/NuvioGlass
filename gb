@@ -1,0 +1,10 @@
+#!/bin/zsh
+# Nuvio Glass gradle wrapper. Pins JDK 21 and keeps build output off the iCloud-synced Desktop.
+# SDK location comes from local.properties (sdk.dir), which Android Studio manages — do not
+# override ANDROID_HOME here or the two will disagree about which SDK owns the NDK.
+# Usage: ./gb assembleFullDebug   |   ./gb installFullDebug
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+exec "$(dirname "$0")/gradlew" -PnuvioBuildRoot="$HOME/Library/Caches/NuvioGlassBuild" "$@"

@@ -514,6 +514,12 @@ class LayoutSettingsViewModel @Inject constructor(
         if (_uiState.value.selectedLayout == layout && _uiState.value.hasChosen) return
         viewModelScope.launch {
             layoutPreferenceDataStore.setLayout(layout)
+            // Glass floats frosted chrome over the hero, which only reads as glass when the
+            // backdrop runs edge to edge behind it. Switching to Glass turns that on once;
+            // it stays a normal toggle the user can turn back off.
+            if (layout == HomeLayout.GLASS) {
+                layoutPreferenceDataStore.setModernHeroFullScreenBackdropEnabled(true)
+            }
         }
     }
 

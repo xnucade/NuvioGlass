@@ -138,6 +138,29 @@ fun AboutSettingsContent(
                                 textAlign = TextAlign.Center
                             )
 
+                            // Fork identity. Upstream's own branding stays above this: the app
+                            // still is Nuvio, and GPLv3 expects that attribution to survive.
+                            Text(
+                                text = stringResource(R.string.about_fork_name),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = NuvioTheme.colors.TextPrimary,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                text = stringResource(R.string.about_fork_by),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = NuvioTheme.colors.TextSecondary,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                text = stringResource(R.string.about_fork_changes),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = NuvioTheme.colors.TextTertiary,
+                                textAlign = TextAlign.Center
+                            )
+
                             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
 
                             if (AppFeaturePolicy.inAppUpdatesEnabled) {
@@ -179,6 +202,21 @@ fun AboutSettingsContent(
                                 subtitle = stringResource(R.string.about_licenses_attributions_subtitle),
                                 trailingIcon = Icons.Default.ChevronRight,
                                 onClick = onNavigateToLicensesAttributions
+                            )
+
+                            // GPLv3 obliges a distributed build to point at its source.
+                            SettingsActionRow(
+                                title = stringResource(R.string.about_fork_source),
+                                subtitle = stringResource(R.string.about_fork_source_subtitle),
+                                trailingIcon = Icons.Default.OpenInNew,
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("https://github.com/xnucade/NuvioGlass")
+                                        )
+                                    )
+                                }
                             )
                         }
                     }

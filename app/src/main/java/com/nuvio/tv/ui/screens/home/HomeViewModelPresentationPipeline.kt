@@ -191,7 +191,7 @@ internal fun HomeViewModel.observeLayoutPreferencesPipeline() {
             .distinctUntilChanged()
             .debounce(300)
             .collectLatest { prefs ->
-                val effectivePosterLabelsEnabled = if (prefs.layout == HomeLayout.MODERN) {
+                val effectivePosterLabelsEnabled = if (prefs.layout.usesModernPipeline) {
                     false
                 } else {
                     prefs.posterLabelsEnabled
@@ -533,7 +533,7 @@ internal fun HomeViewModel.onItemFocusPipeline(item: MetaPreview) {
     }
 
     val tmdbEnabledForCurrentLayout = currentTmdbSettings.enabled &&
-        (_uiState.value.homeLayout != HomeLayout.MODERN || currentTmdbSettings.modernHomeEnabled)
+        (!_uiState.value.homeLayout.usesModernPipeline || currentTmdbSettings.modernHomeEnabled)
     val willEnrich = tmdbEnabledForCurrentLayout || externalMetaPrefetchEnabled
 
     pendingTmdbEnrichItemId = item.id
@@ -666,7 +666,7 @@ internal fun HomeViewModel.preloadAdjacentItemPipeline(item: MetaPreview) {
     adjacentItemPrefetchJob?.cancel()
     adjacentItemPrefetchJob = viewModelScope.launch(Dispatchers.IO) {
         val tmdbEnabledForCurrentLayout = currentTmdbSettings.enabled &&
-            (_uiState.value.homeLayout != HomeLayout.MODERN || currentTmdbSettings.modernHomeEnabled)
+            (!_uiState.value.homeLayout.usesModernPipeline || currentTmdbSettings.modernHomeEnabled)
         delay(HomeViewModel.EXTERNAL_META_PREFETCH_ADJACENT_DEBOUNCE_MS)
         if (pendingAdjacentPrefetchItemId != item.id) return@launch
 
@@ -750,7 +750,7 @@ private fun HomeViewModel.applyEnrichmentToDisplayedRows(
     transform: (MetaPreview) -> MetaPreview
 ) {
     _uiState.update { state ->
-        if (state.homeLayout == HomeLayout.MODERN) return@update state
+        if (state.homeLayout.usesModernPipeline) return@update state
         var changed = false
 
         fun patch(row: com.nuvio.tv.domain.model.CatalogRow): com.nuvio.tv.domain.model.CatalogRow {
@@ -798,7 +798,7 @@ private fun HomeViewModel.applyEnrichmentToDisplayedRows(
 }
 
 private fun HomeViewModel.updateCatalogItemWithTmdb(itemId: String, enrichment: TmdbEnrichment) {
-    val isModernLayout = _uiState.value.homeLayout == HomeLayout.MODERN
+    val isModernLayout = _uiState.value.homeLayout.usesModernPipeline
     fun mergeItem(currentItem: MetaPreview): MetaPreview {
         var merged = currentItem
         if (currentTmdbSettings.useBasicInfo) {

@@ -966,7 +966,7 @@ private fun FollowLayoutContent(
                 )
             }
         }
-        HomeLayout.MODERN -> ModernHomeContent(
+        HomeLayout.MODERN, HomeLayout.GLASS -> ModernHomeContent(
             uiState = homeState,
             modernPresentation = homeState.modernHomePresentation,
             focusState = focusState,

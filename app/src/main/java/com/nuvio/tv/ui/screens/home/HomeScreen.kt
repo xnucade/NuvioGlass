@@ -121,7 +121,7 @@ fun HomeScreen(
     val hasCollectionContent = uiState.homeRows.any { it is HomeRow.CollectionRow }
     val hasHeroContent = uiState.heroItems.isNotEmpty()
     val modernPresentationReady =
-        uiState.homeLayout != HomeLayout.MODERN ||
+        !uiState.homeLayout.usesModernPipeline ||
             modernPresentation.rows.list.isNotEmpty() ||
             (uiState.heroSectionEnabled && hasHeroContent && !hasCatalogContent && !hasCollectionContent)
     var showHomeContentWithAnimation by rememberSaveable { mutableStateOf(false) }
@@ -133,7 +133,7 @@ fun HomeScreen(
     var posterOptionsTarget by remember { mutableStateOf<HomePosterOptionsTarget?>(null) }
 
     LaunchedEffect(uiState.homeLayout) {
-        if (uiState.homeLayout != HomeLayout.MODERN) {
+        if (!uiState.homeLayout.usesModernPipeline) {
             HeroBackdropState.update(null)
         }
     }
@@ -394,7 +394,8 @@ fun HomeScreen(
                                 onCatalogItemLongPress = onCatalogItemLongPress
                             )
 
-                            HomeLayout.MODERN -> ModernHomeRoute(
+                            // Glass renders Modern's content; its chrome lives in GlassScaffold.
+                            HomeLayout.MODERN, HomeLayout.GLASS -> ModernHomeRoute(
                                 viewModel = viewModel,
                                 uiState = uiState,
                                 onNavigateToDetail = onNavigateToDetailStable,

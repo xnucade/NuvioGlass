@@ -1,5 +1,6 @@
 package com.nuvio.tv.ui.screens.home
 
+import com.nuvio.tv.ui.components.glass.LocalGlassChromeReveal
 import com.nuvio.tv.ui.theme.NuvioTheme
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -269,6 +270,8 @@ internal fun ModernHomeRowsList(
         null
     }
 
+    val revealTopChrome = LocalGlassChromeReveal.current
+
     CompositionLocalProvider(
         LocalBringIntoViewSpec provides verticalRowBringIntoViewSpec,
         LocalFastScrollActive provides isFastScrolling,
@@ -287,6 +290,13 @@ internal fun ModernHomeRowsList(
                 .focusRestorer { focusRestorerRequester() }
                 .onPreviewKeyEvent { event ->
                     val firstRowKey = carouselRows.list.firstOrNull()?.key
+                    // Up with no row above: offer it to the Glass top chrome before anything else.
+                    // No-op under every other layout.
+                    if (event.type == KeyEventType.KeyDown &&
+                        event.key == Key.DirectionUp &&
+                        activeRowKey.value == firstRowKey &&
+                        revealTopChrome()
+                    ) return@onPreviewKeyEvent true
                     val lastRowKey = carouselRows.list.lastOrNull()?.key
                     if (event.type == KeyEventType.KeyDown &&
                         event.key == Key.DirectionUp &&
