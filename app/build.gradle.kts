@@ -109,7 +109,11 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1057
-        versionName = "0.9.1-beta"
+        // Must match the GitHub release tag, minus the leading "v". The updater compares
+        // semver including prerelease identifiers, and "beta" sorts before "glass", so leaving
+        // upstream's name here makes every build think our own release is an upgrade and the
+        // banner never goes away. Bump this and the tag together: 0.9.1-glass.2, and so on.
+        versionName = "0.9.1-glass.1"
 
         buildConfigField("String", "PARENTAL_GUIDE_API_URL", "\"${localProperties.getProperty("PARENTAL_GUIDE_API_URL", "")}\"")
         buildConfigField("String", "INTRODB_API_URL", "\"${localProperties.getProperty("INTRODB_API_URL", "")}\"")
@@ -149,8 +153,11 @@ android {
         buildConfigField("String", "SENTRY_DSN", buildConfigString(sentryDsn))
 
         // In-app updater (GitHub Releases)
-        buildConfigField("String", "GITHUB_OWNER", "\"NuvioMedia\"")
-        buildConfigField("String", "GITHUB_REPO", "\"NuvioTV\"")
+        // The in-app updater must check THIS fork's releases. Left pointing at upstream it
+        // offers their APK, which has a different applicationId and signing key, so the
+        // download either fails to install or lands as a second, unrelated app.
+        buildConfigField("String", "GITHUB_OWNER", "\"xnucade\"")
+        buildConfigField("String", "GITHUB_REPO", "\"NuvioGlass\"")
     }
 
     flavorDimensions += "distribution"

@@ -1,5 +1,6 @@
 package com.nuvio.tv.ui.screens.home
 
+import com.nuvio.tv.ui.components.glass.glassSurface
 import com.nuvio.tv.ui.theme.NuvioMotion
 
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -679,12 +680,11 @@ private fun HeroCombinedMetaBadge(
 ) {
     val dividerColor = contentColor.copy(alpha = 0.55f)
     Row(
+        // Glass treatment, blur deliberately OFF. These badges sit INSIDE the hero, which is
+        // itself the haze source, so sampling a live blur here would be circular. Tint plus the
+        // lit top edge carry the glass language without that.
         modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .border(
-                border = BorderStroke(NuvioTheme.spacing.hairline, dividerColor),
-                shape = RoundedCornerShape(6.dp)
-            )
+            .glassSurface(shape = HeroBadgeShape, blurEnabled = false)
             .padding(horizontal = NuvioTheme.spacing.sm, vertical = NuvioTheme.spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
@@ -713,6 +713,9 @@ private fun HeroCombinedMetaBadge(
     }
 }
 
+/** Shared by the single and combined hero badges so they stay visually identical. */
+private val HeroBadgeShape = RoundedCornerShape(6.dp)
+
 @Composable
 private fun HeroMetaBadge(
     text: String,
@@ -720,12 +723,11 @@ private fun HeroMetaBadge(
     contentColor: Color
 ) {
     Box(
+        // Glass treatment, blur deliberately OFF. These badges sit INSIDE the hero, which is
+        // itself the haze source, so sampling a live blur here would be circular. Tint plus the
+        // lit top edge carry the glass language without that.
         modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .border(
-                border = BorderStroke(NuvioTheme.spacing.hairline, contentColor.copy(alpha = 0.55f)),
-                shape = RoundedCornerShape(6.dp)
-            )
+            .glassSurface(shape = HeroBadgeShape, blurEnabled = false)
             .padding(horizontal = NuvioTheme.spacing.sm, vertical = NuvioTheme.spacing.xs),
         contentAlignment = Alignment.Center
     ) {
