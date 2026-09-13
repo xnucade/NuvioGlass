@@ -23,6 +23,17 @@ fun resolveProperty(dev: Properties, local: Properties, key: String, fallback: S
         ?: fallback
 }
 
+// The backend fields are read here as NUVIO_-prefixed names, but local.example.properties
+// documents the unprefixed ones. A config filled in from that template resolved to an empty
+// backend, which left the app permanently signed out and the login QR blank. Accept either.
+fun resolveBackendProperty(dev: Properties, local: Properties, suffix: String): String =
+    resolveProperty(dev, local, "NUVIO_$suffix").takeIf { it.isNotBlank() }
+        ?: resolveProperty(dev, local, suffix)
+
+// Release reads local.properties only, so a dev backend can never leak into a production build.
+fun resolveBackendProperty(local: Properties, suffix: String): String =
+    resolveBackendProperty(Properties(), local, suffix)
+
 fun buildConfigString(value: String): String {
     return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 }
@@ -210,9 +221,9 @@ android {
             buildConfigField("String", "SENTRY_ENVIRONMENT", buildConfigString("debug"))
 
             // Dev environment (from local.dev.properties)
-            buildConfigField("String", "SUPABASE_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_URL")))
-            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_ANON_KEY")))
-            buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_FALLBACK_URL")))
+            buildConfigField("String", "SUPABASE_URL", buildConfigString(resolveBackendProperty(devProperties, localProperties, "SUPABASE_URL")))
+            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(resolveBackendProperty(devProperties, localProperties, "SUPABASE_ANON_KEY")))
+            buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(resolveBackendProperty(devProperties, localProperties, "SUPABASE_FALLBACK_URL")))
             buildConfigField("String", "TV_LOGIN_WEB_BASE_URL", "\"${devProperties.getProperty("TV_LOGIN_WEB_BASE_URL", "https://nuvio.tv/tv-login")}\"")
             buildConfigField("String", "DEVICE_LOGIN_WEB_BASE_URL", "\"${devProperties.getProperty("DEVICE_LOGIN_WEB_BASE_URL", "https://nuvio.tv/link")}\"")
             buildConfigField("String", "PARENTAL_GUIDE_API_URL", "\"${devProperties.getProperty("PARENTAL_GUIDE_API_URL", "")}\"")
@@ -245,9 +256,9 @@ android {
             buildConfigField("String", "SENTRY_ENVIRONMENT", buildConfigString("production"))
 
             // Production environment (from local.properties)
-            buildConfigField("String", "SUPABASE_URL", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_URL", "")))
-            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_ANON_KEY", "")))
-            buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_FALLBACK_URL", "")))
+            buildConfigField("String", "SUPABASE_URL", buildConfigString(resolveBackendProperty(localProperties, "SUPABASE_URL")))
+            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(resolveBackendProperty(localProperties, "SUPABASE_ANON_KEY")))
+            buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(resolveBackendProperty(localProperties, "SUPABASE_FALLBACK_URL")))
             buildConfigField("String", "TV_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("TV_LOGIN_WEB_BASE_URL", "https://nuvio.tv/tv-login")}\"")
             buildConfigField("String", "DEVICE_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("DEVICE_LOGIN_WEB_BASE_URL", "https://nuvio.tv/link")}\"")
             buildConfigField("String", "PARENTAL_GUIDE_API_URL", "\"${localProperties.getProperty("PARENTAL_GUIDE_API_URL", "")}\"")

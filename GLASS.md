@@ -82,7 +82,9 @@ The Onn 4K is arm64. The build also produces armeabi-v7a, x86, x86_64 and a univ
 
 - `TMDB_API_KEY` — artwork and metadata. Without it most posters and backdrops stay empty.
 - `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` — Trakt sync.
-- `SUPABASE_URL` / `SUPABASE_ANON_KEY` — Nuvio account login. Blank runs the app signed out.
+- `NUVIO_SUPABASE_URL` / `NUVIO_SUPABASE_ANON_KEY` — account sign-in and sync: add-ons, watch
+  history, playback progress. Blank runs the app signed out, which is what the published release
+  APK ships as. Whoever builds the fork points it at a backend they control.
 
 `nuviotv.jks` is a locally generated debug keystore, also gitignored. Upstream's build script signs
 even debug builds, so the file has to exist for any build to succeed.
