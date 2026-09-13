@@ -4,9 +4,9 @@
 # Only one app can be foreground at a time, so this runs in two phases:
 #
 #   1. On the TV: official Nuvio > Settings > Addons > "Manage from phone"
-#        ./migrate-addons export 192.168.0.166 8080 ~/nuvio-addons.json
+#        ./migrate-addons export <tv-ip> 8080 ~/nuvio-addons.json
 #   2. On the TV: Nuvio Glass > Settings > Addons > "Manage from phone"
-#        ./migrate-addons import 192.168.0.166 8080 ~/nuvio-addons.json
+#        ./migrate-addons import <tv-ip> 8080 ~/nuvio-addons.json
 #   3. Approve the pending change on the TV.
 #
 # Ports start at 8080 and climb to the first free one; the TV shows the address.

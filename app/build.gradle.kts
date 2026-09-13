@@ -101,10 +101,17 @@ val releaseStoreFilePath = env("NUVIO_RELEASE_STORE_FILE")
     ?: localProperties.getProperty("NUVIO_RELEASE_STORE_FILE")
 val releaseKeyAliasValue = env("NUVIO_RELEASE_KEY_ALIAS")
     ?: localProperties.getProperty("NUVIO_RELEASE_KEY_ALIAS", "nuviotv")
-val releaseKeyPasswordValue = env("NUVIO_RELEASE_KEY_PASSWORD")
-    ?: localProperties.getProperty("NUVIO_RELEASE_KEY_PASSWORD", "815787")
-val releaseStorePasswordValue = env("NUVIO_RELEASE_STORE_PASSWORD")
-    ?: localProperties.getProperty("NUVIO_RELEASE_STORE_PASSWORD", "815787")
+// Upstream ships fallback signing passwords inline, which are therefore published in their
+// public repo. Keeping them would mean a missing local value silently signs with a password
+// anyone can look up, so require the value instead and fail with a message that says how to
+// set it. A fresh clone has to generate its own nuviotv.jks anyway — it is gitignored.
+fun requiredSigningProperty(key: String): String =
+    env(key)
+        ?: localProperties.getProperty(key)
+        ?: throw GradleException("$key is not set. Add it to local.properties (see local.example.properties).")
+
+val releaseKeyPasswordValue = requiredSigningProperty("NUVIO_RELEASE_KEY_PASSWORD")
+val releaseStorePasswordValue = requiredSigningProperty("NUVIO_RELEASE_STORE_PASSWORD")
 
 android {
     namespace = "com.nuvio.tv"
